@@ -1,0 +1,231 @@
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<style>
+* { font-size: 20px; }
+table td, table input {
+  font-family: monospace;
+  text-align: center;
+  width: 30px;
+}
+table td.count {
+  font-size: 14px;
+}
+</style>
+</head>
+<body>
+
+<div>Key:</div>
+<table>
+<tr>
+<td>A</td>
+<td>B</td>
+<td>C</td>
+<td>D</td>
+<td>E</td>
+<td>F</td>
+<td>G</td>
+<td>H</td>
+<td>I</td>
+<td>J</td>
+<td>K</td>
+<td>L</td>
+<td>M</td>
+<td>N</td>
+<td>O</td>
+<td>P</td>
+<td>Q</td>
+<td>R</td>
+<td>S</td>
+<td>T</td>
+<td>U</td>
+<td>V</td>
+<td>W</td>
+<td>X</td>
+<td>Y</td>
+<td>Z</td>
+</tr>
+<tr>
+<td><input class='key' id='key-A'></input></td>
+<td><input class='key' id='key-B'></input></td>
+<td><input class='key' id='key-C'></input></td>
+<td><input class='key' id='key-D'></input></td>
+<td><input class='key' id='key-E'></input></td>
+<td><input class='key' id='key-F'></input></td>
+<td><input class='key' id='key-G'></input></td>
+<td><input class='key' id='key-H'></input></td>
+<td><input class='key' id='key-I'></input></td>
+<td><input class='key' id='key-J'></input></td>
+<td><input class='key' id='key-K'></input></td>
+<td><input class='key' id='key-L'></input></td>
+<td><input class='key' id='key-M'></input></td>
+<td><input class='key' id='key-N'></input></td>
+<td><input class='key' id='key-O'></input></td>
+<td><input class='key' id='key-P'></input></td>
+<td><input class='key' id='key-Q'></input></td>
+<td><input class='key' id='key-R'></input></td>
+<td><input class='key' id='key-S'></input></td>
+<td><input class='key' id='key-T'></input></td>
+<td><input class='key' id='key-U'></input></td>
+<td><input class='key' id='key-V'></input></td>
+<td><input class='key' id='key-W'></input></td>
+<td><input class='key' id='key-X'></input></td>
+<td><input class='key' id='key-Y'></input></td>
+<td><input class='key' id='key-Z'></input></td>
+</tr>
+<tr>
+<td class='count' id='count-A'></td>
+<td class='count' id='count-B'></td>
+<td class='count' id='count-C'></td>
+<td class='count' id='count-D'></td>
+<td class='count' id='count-E'></td>
+<td class='count' id='count-F'></td>
+<td class='count' id='count-G'></td>
+<td class='count' id='count-H'></td>
+<td class='count' id='count-I'></td>
+<td class='count' id='count-J'></td>
+<td class='count' id='count-K'></td>
+<td class='count' id='count-L'></td>
+<td class='count' id='count-M'></td>
+<td class='count' id='count-N'></td>
+<td class='count' id='count-O'></td>
+<td class='count' id='count-P'></td>
+<td class='count' id='count-Q'></td>
+<td class='count' id='count-R'></td>
+<td class='count' id='count-S'></td>
+<td class='count' id='count-T'></td>
+<td class='count' id='count-U'></td>
+<td class='count' id='count-V'></td>
+<td class='count' id='count-W'></td>
+<td class='count' id='count-X'></td>
+<td class='count' id='count-Y'></td>
+<td class='count' id='count-Z'></td>
+</tr>
+</table>
+
+<br/>
+<div>Input:</div>
+<textarea id="in" rows="10" cols="80">
+  GHGQS IHHRD CHTIR OOTUB QQOAR
+  UANTH UCAOO AIONA NGLOE CYACD
+  CAOHD UNSG AGEHG INGSA NTUEN
+  HIUPH ONTQI DCRLV TANNN GUHTG 
+  TAANI HCUAN GLATT OAACB UNCHY
+  AUUCP ITHPG RUAHN VNSCN BIAAN
+  AGUNI VXIBN HTCUE QUIOU LTH
+</textarea>
+<div>
+<button id="autoFill">Thám tự động</button>
+</div>
+<div>Output:</div>
+<textarea id="out" rows="10" cols="80" disabled>
+</textarea>
+
+<script>
+$(document).ready(function() {
+  // Attach key handlers to key inputs.
+  var inputs = $('.key');
+  inputs.keypress(function(e) {
+    var code = e.keyCode || e.which;
+    var key = String.fromCharCode(code).toUpperCase();
+    if (key >= 'A' && key <= 'Z') {
+      // Clear any identical existing value.
+      inputs.each(function(i, e) {
+        if (e.value == key) {
+          e.value = '';
+        }
+      });
+      // Set the value in this input.
+      e.target.value = key;
+      // Trigger refresh.
+      substitute();
+      // Do not write character.
+      return false;
+    }
+  });
+  // Also update on blur, in case of deletion.
+  inputs.blur(function() { substitute(); });
+  
+  // Attach change handler input area.
+  $('#in').bind('input propertychange', function() {
+    count();
+    substitute();
+  });
+  
+  // Run first time.
+  count();
+  substitute();
+});
+
+function count() {
+  // Build a count table.
+  var map = {};
+  var txt = $('#in').val().toUpperCase();
+  for (var i = 0; i < txt.length; i++) {
+    var key = txt.charAt(i);
+    if (key >= 'A' && key <= 'Z') {
+      map[key] = (map[key] || 0) + 1;
+    }
+  }
+  
+  // Set counter values.
+  $('.count').each(function(i, e) {
+    var c = e.id.slice(-1);
+    var v = map[c] || 0;
+    e.textContent = v;
+  });
+  
+  // Replace text in one pass.
+  var txt = $('#in').val().toUpperCase();
+  for (var i = 0; i < txt.length; i++) {
+    var val = map[txt.charAt(i)];
+    if (val) {
+      txt = txt.substring(0, i) + val + txt.substring(i + 1);
+    }
+  }
+  $('#out').val(txt);
+}
+
+function substitute() {
+  // Build a translation table.
+  var map = {};
+  $('.key').each(function(i, e) {
+    var cOld = e.id.slice(-1);
+    var cNew = e.value || '?';
+    map[cOld] = cNew;
+  });
+  
+  // Replace text in one pass.
+  var txt = $('#in').val().toUpperCase();
+  for (var i = 0; i < txt.length; i++) {
+    var val = map[txt.charAt(i)];
+    if (val) {
+      txt = txt.substring(0, i) + val + txt.substring(i + 1);
+    }
+  }
+  $('#out').val(txt);
+}
+document.getElementById("autoFill").onclick = function(){
+  var map = {};
+  var txt = $('#in').val().toUpperCase();
+  for (var i = 0; i < txt.length; i++) {
+    var key = txt.charAt(i);
+    if (key >= 'A' && key <= 'Z') {
+      map[key] = (map[key] || 0) + 1;
+    }
+  }
+  const arr = [...map].map(([name, value]) => ({ name, value }));
+
+  console.log(arr);
+
+  a.sort(function(x, y) {
+    return x[1].length - y[1].length;
+  });  
+  sorted = new Map(a);
+  for(var x of sorted)
+      document.write(JSON.stringify(x) + "<br>");
+}
+
+</script>
+</body>
+</html>
